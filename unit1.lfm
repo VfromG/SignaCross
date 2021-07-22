@@ -1,7 +1,7 @@
 object SignaForm: TSignaForm
-  Left = 484
+  Left = 508
   Height = 523
-  Top = 206
+  Top = 368
   Width = 1119
   Caption = 'Plotts crossing'
   ClientHeight = 523
@@ -19,7 +19,7 @@ object SignaForm: TSignaForm
     ClientHeight = 491
     ClientWidth = 821
     TabOrder = 0
-    object StringGrid1: TStringGrid
+    object Table: TStringGrid
       Left = 1
       Height = 489
       Top = 1
@@ -32,7 +32,7 @@ object SignaForm: TSignaForm
       RowCount = 1
       ScrollBars = ssAutoVertical
       TabOrder = 0
-      OnPrepareCanvas = StringGrid1PrepareCanvas
+      OnPrepareCanvas = TablePrepareCanvas
       ColWidths = (
         64
         275
@@ -71,7 +71,7 @@ object SignaForm: TSignaForm
         'Capacity'
       )
     end
-    object Memo3: TMemo
+    object TmpFile: TMemo
       Left = 164
       Height = 416
       Top = 40
@@ -90,7 +90,7 @@ object SignaForm: TSignaForm
     ClientHeight = 32
     ClientWidth = 1119
     TabOrder = 1
-    object BitBtn1: TBitBtn
+    object SelectFolder: TBitBtn
       Left = 326
       Height = 32
       Top = 0
@@ -174,10 +174,10 @@ object SignaForm: TSignaForm
         0000000000000000000000000000000000000000000000000000
       }
       ModalResult = 1
-      OnClick = BitBtn1Click
+      OnClick = SelectFolderClick
       TabOrder = 0
     end
-    object BitBtn2: TBitBtn
+    object CheckCross: TBitBtn
       Left = 476
       Height = 32
       Top = 0
@@ -260,7 +260,7 @@ object SignaForm: TSignaForm
         0000000000000000000000000000000000000000000000000000000000000000
         0000000000000000000000000000000000000000000000000000
       }
-      OnClick = BitBtn2Click
+      OnClick = CheckCrossClick
       TabOrder = 1
     end
     object Panel4: TPanel
@@ -306,7 +306,7 @@ object SignaForm: TSignaForm
         TabOrder = 1
       end
     end
-    object BitBtn3: TBitBtn
+    object Save: TBitBtn
       Left = 0
       Height = 32
       Top = 0
@@ -389,10 +389,10 @@ object SignaForm: TSignaForm
         0000000000000000000000000000000000000000000000000000000000000000
         0000000000000000000000000000000000000000000000000000
       }
-      OnClick = BitBtn3Click
+      OnClick = SaveClick
       TabOrder = 3
     end
-    object BitBtn4: TBitBtn
+    object Load: TBitBtn
       Left = 100
       Height = 32
       Top = 0
@@ -475,7 +475,7 @@ object SignaForm: TSignaForm
         0000000000000000000000000000000000000000000000000000000000000000
         0000000000000000000000000000000000000000000000000000
       }
-      OnClick = BitBtn4Click
+      OnClick = LoadClick
       TabOrder = 4
     end
     object Panel2: TPanel
@@ -487,7 +487,7 @@ object SignaForm: TSignaForm
       BevelOuter = bvNone
       TabOrder = 5
     end
-    object BitBtn5: TBitBtn
+    object Clean: TBitBtn
       Left = 200
       Height = 32
       Top = 0
@@ -570,11 +570,11 @@ object SignaForm: TSignaForm
         0000000000000000000000000000000000000000000000000000000000000000
         0000000000000000000000000000000000000000000000000000
       }
-      OnClick = BitBtn5Click
+      OnClick = CleanClick
       TabOrder = 6
     end
   end
-  object Memo2: TMemo
+  object ListDir: TMemo
     Left = 344
     Height = 426
     Top = 64
@@ -593,7 +593,7 @@ object SignaForm: TSignaForm
     ClientHeight = 491
     ClientWidth = 298
     TabOrder = 3
-    object Memo1: TMemo
+    object PlotList: TMemo
       Left = 0
       Height = 491
       Top = 0
@@ -604,7 +604,7 @@ object SignaForm: TSignaForm
       TabOrder = 0
     end
   end
-  object Memo4: TMemo
+  object PlotToDir: TMemo
     Left = 328
     Height = 91
     Top = 208
@@ -615,11 +615,11 @@ object SignaForm: TSignaForm
     TabOrder = 4
     Visible = False
   end
-  object SelectDirectoryDialog1: TSelectDirectoryDialog
+  object SelectD: TSelectDirectoryDialog
     Left = 576
     Top = 72
   end
-  object SaveDialog1: TSaveDialog
+  object SaveD: TSaveDialog
     Title = 'Save as'
     DefaultExt = '.signa'
     FileName = 'PlotList'
@@ -628,7 +628,7 @@ object SignaForm: TSignaForm
     Left = 496
     Top = 72
   end
-  object OpenDialog1: TOpenDialog
+  object OpenD: TOpenDialog
     Title = 'Open signa config'
     DefaultExt = '.signa'
     FileName = 'PlotList.signa'

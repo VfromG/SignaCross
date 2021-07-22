@@ -13,34 +13,34 @@ type
   { TSignaForm }
 
   TSignaForm = class(TForm)
-    BitBtn1: TBitBtn;
-    BitBtn2: TBitBtn;
-    BitBtn3: TBitBtn;
-    BitBtn4: TBitBtn;
-    BitBtn5: TBitBtn;
-    Memo1: TMemo;
-    Memo2: TMemo;
-    Memo3: TMemo;
-    Memo4: TMemo;
-    OpenDialog1: TOpenDialog;
+    SelectFolder: TBitBtn;
+    CheckCross: TBitBtn;
+    Save: TBitBtn;
+    Load: TBitBtn;
+    Clean: TBitBtn;
+    PlotList: TMemo;
+    ListDir: TMemo;
+    TmpFile: TMemo;
+    PlotToDir: TMemo;
+    OpenD: TOpenDialog;
     Panel2: TPanel;
     Panel3: TPanel;
     Panel4: TPanel;
     Panel1: TPanel;
     Panel5: TPanel;
     Phys: TLabeledEdit;
-    SaveDialog1: TSaveDialog;
-    SelectDirectoryDialog1: TSelectDirectoryDialog;
+    SaveD: TSaveDialog;
+    SelectD: TSelectDirectoryDialog;
     Share: TLabeledEdit;
-    StringGrid1: TStringGrid;
-    procedure BitBtn1Click(Sender: TObject);
-    procedure BitBtn2Click(Sender: TObject);
-    procedure BitBtn3Click(Sender: TObject);
-    procedure BitBtn4Click(Sender: TObject);
-    procedure BitBtn5Click(Sender: TObject);
+    Table: TStringGrid;
+    procedure SelectFolderClick(Sender: TObject);
+    procedure CheckCrossClick(Sender: TObject);
+    procedure SaveClick(Sender: TObject);
+    procedure LoadClick(Sender: TObject);
+    procedure CleanClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormPaint(Sender: TObject);
-    procedure StringGrid1PrepareCanvas(sender: TObject; aCol, aRow: Integer;
+    procedure TablePrepareCanvas(sender: TObject; aCol, aRow: Integer;
       aState: TGridDrawState);
   private
     FirstStart: boolean;
@@ -62,10 +62,10 @@ var
     res:boolean;
     i:integer;
 begin
-   if SignaForm.Memo2.Lines.Count=-1 then Exit;
+   if SignaForm.ListDir.Lines.Count=-1 then Exit;
    res:=false;
-   for i := 0 to SignaForm.Memo2.Lines.Count - 1 do
-       if  SignaForm.Memo2.Lines.Strings[i]=path then res:=true;
+   for i := 0 to SignaForm.ListDir.Lines.Count - 1 do
+       if  SignaForm.ListDir.Lines.Strings[i]=path then res:=true;
    Result:=res;
 end;
 
@@ -78,11 +78,11 @@ begin
              ShowMessage('The list plots from "'+FolderName+'" is already loaded');
              Exit;
         end;
-     SignaForm.Memo2.Lines.Add(FolderName);
+     SignaForm.ListDir.Lines.Add(FolderName);
      if FindFirst(FolderName+'\*_*_*', faAnyFile, sr)=0  then
         repeat
-            SignaForm.Memo1.Lines.Add(sr.Name);
-            SignaForm.Memo4.Lines.Add(FolderName);
+            SignaForm.PlotList.Lines.Add(sr.Name);
+            SignaForm.PlotToDir.Lines.Add(FolderName);
         until FindNext(sr)<>0;
       FindClose(sr);
 end;
@@ -155,19 +155,21 @@ end;
 
 
 
-procedure TSignaForm.BitBtn1Click(Sender: TObject);
+procedure TSignaForm.SelectFolderClick(Sender: TObject);
 var FolderName: String;
 begin
-  if SelectDirectoryDialog1.Execute then
+  if SelectD.Execute then
     begin
-      FolderName:= SelectDirectoryDialog1.FileName;
+      FolderName:= SelectD.FileName;
       ReadFolder(FolderName);
     end;
 end;
 
 
 
-procedure TSignaForm.BitBtn2Click(Sender: TObject);
+procedure TSignaForm.CheckCrossClick(Sender: TObject);
+const
+  nonce=262144;
 var i: Integer;
     j: Integer;
     pos1_1,pos1_2:integer;
@@ -176,8 +178,10 @@ var i: Integer;
     y_1,y_2:int64;
     row:integer;
     p_len,s_len:int64;
+    n_p_t: real;
 begin
      //Считваем плотты
+     n_p_t:=nonce/1024/1024/1024/1024*100;
      row:=1;
      p_len:=0;
      s_len:=0;
@@ -185,48 +189,47 @@ begin
      x_2:=0;
      y_1:=0;
      y_2:=0;
-     StringGrid1.RowCount:=row;
-     if Memo1.Lines.Count=-1 then Exit;
-     for i := 0 to Memo1.Lines.Count - 2 do
+     Table.RowCount:=row;
+     if PlotList.Lines.Count=-1 then Exit;
+     for i := 0 to PlotList.Lines.Count - 2 do
          begin
-             pos1_1:=Pos('_',Memo1.Lines.Strings[i]);
-             pos1_2:=PosEx('_',Memo1.Lines.Strings[i],pos1_1+1);
-             x_1:=StrToInt64(Copy(Memo1.Lines.Strings[i],pos1_1+1,pos1_2-pos1_1-1));
-             x_2:=x_1+StrToInt64(Copy(Memo1.Lines.Strings[i],pos1_2+1,100))-1;
+             pos1_1:=Pos('_',PlotList.Lines.Strings[i]);
+             pos1_2:=PosEx('_',PlotList.Lines.Strings[i],pos1_1+1);
+             x_1:=StrToInt64(Copy(PlotList.Lines.Strings[i],pos1_1+1,pos1_2-pos1_1-1));
+             x_2:=x_1+StrToInt64(Copy(PlotList.Lines.Strings[i],pos1_2+1,100))-1;
              p_len:=p_len+(x_2-x_1+1);
-             for j := i+1 to Memo1.Lines.Count - 1 do
+             for j := i+1 to PlotList.Lines.Count - 1 do
              begin
-                 pos2_1:=Pos('_',Memo1.Lines.Strings[j]);
-                 pos2_2:=PosEx('_',Memo1.Lines.Strings[j],pos2_1+1);
-                 y_1:=StrToInt64(Copy(Memo1.Lines.Strings[j],pos2_1+1,pos2_2-pos1_1-1));
-                 y_2:=y_1+StrToInt64(Copy(Memo1.Lines.Strings[j],pos2_2+1,100))-1;
+                 pos2_1:=Pos('_',PlotList.Lines.Strings[j]);
+                 pos2_2:=PosEx('_',PlotList.Lines.Strings[j],pos2_1+1);
+                 y_1:=StrToInt64(Copy(PlotList.Lines.Strings[j],pos2_1+1,pos2_2-pos1_1-1));
+                 y_2:=y_1+StrToInt64(Copy(PlotList.Lines.Strings[j],pos2_2+1,100))-1;
 
                  if x_1<=y_1 then
                     begin
                         if x_2>=y_1 then
                            begin
                                 row:=row+1;
-                                StringGrid1.RowCount:=row;
-                                StringGrid1.Cells[0,row-1]:=Memo4.Lines.Strings[i];
-                                StringGrid1.Cells[1,row-1]:=Memo1.Lines.Strings[i];
-                                StringGrid1.Cells[2,row-1]:=Memo4.Lines.Strings[j];
-                                StringGrid1.Cells[3,row-1]:=Memo1.Lines.Strings[j];
-                                StringGrid1.Cells[4,row-1]:=IntToStr(y_1);
+                                Table.RowCount:=row;
+                                Table.Cells[0,row-1]:=PlotToDir.Lines.Strings[i];
+                                Table.Cells[1,row-1]:=PlotList.Lines.Strings[i];
+                                Table.Cells[2,row-1]:=PlotToDir.Lines.Strings[j];
+                                Table.Cells[3,row-1]:=PlotList.Lines.Strings[j];
+                                Table.Cells[4,row-1]:=IntToStr(y_1);
 
                                 if y_2<x_2 then
                                    begin
-                                        StringGrid1.Cells[5,row-1]:=IntToStr(y_2);
-                                        StringGrid1.Cells[6,row-1]:=IntToStr(y_2-y_1+1);
-                                        StringGrid1.Cells[7,row-1]:=FloatToStr(Round((y_2-y_1+1)/200000*48.8/10)/100)+' TiB';
+                                        Table.Cells[5,row-1]:=IntToStr(y_2);
                                         s_len:=s_len+y_2-y_1+1;
                                    end
                                 else
                                     begin
-                                        StringGrid1.Cells[5,row-1]:=IntToStr(x_2);
-                                        StringGrid1.Cells[6,row-1]:=IntToStr(x_2-y_1+1);
-                                        StringGrid1.Cells[7,row-1]:=FloatToStr(Round((x_2-y_1+1)/200000*48.8/10)/100)+' TiB';
+                                        Table.Cells[5,row-1]:=IntToStr(x_2);
                                         s_len:=s_len+x_2-y_1+1;
+
                                    end;
+                               Table.Cells[6,row-1]:=IntToStr(s_len);
+                               Table.Cells[7,row-1]:=FloatToStr(Round(s_len*n_p_t)/100)+' TiB';
                            end;
                     end
                  else
@@ -234,34 +237,32 @@ begin
                         if y_2>=x_1 then
                            begin
                                 row:=row+1;
-                                StringGrid1.RowCount:=row;
-                                StringGrid1.Cells[0,row-1]:=Memo4.Lines.Strings[i];
-                                StringGrid1.Cells[1,row-1]:=Memo1.Lines.Strings[i];
-                                StringGrid1.Cells[2,row-1]:=Memo4.Lines.Strings[j];
-                                StringGrid1.Cells[3,row-1]:=Memo1.Lines.Strings[j];
-                                StringGrid1.Cells[4,row-1]:=IntToStr(x_1);
+                                Table.RowCount:=row;
+                                Table.Cells[0,row-1]:=PlotToDir.Lines.Strings[i];
+                                Table.Cells[1,row-1]:=PlotList.Lines.Strings[i];
+                                Table.Cells[2,row-1]:=PlotToDir.Lines.Strings[j];
+                                Table.Cells[3,row-1]:=PlotList.Lines.Strings[j];
+                                Table.Cells[4,row-1]:=IntToStr(x_1);
 
                                 if y_2<x_2 then
                                    begin
-                                        StringGrid1.Cells[5,row-1]:=IntToStr(y_2);
-                                        StringGrid1.Cells[6,row-1]:=IntToStr(y_2-x_1+1);
-                                        StringGrid1.Cells[7,row-1]:=FloatToStr(Round((y_2-x_1+1)/200000*48.8/10)/100)+' TiB';
+                                        Table.Cells[5,row-1]:=IntToStr(y_2);
                                         s_len:=s_len+y_2-x_1+1;
                                    end
                                 else
                                     begin
-                                        StringGrid1.Cells[5,row-1]:=IntToStr(x_2);
-                                        StringGrid1.Cells[6,row-1]:=IntToStr(x_2-x_1+1);
-                                        StringGrid1.Cells[7,row-1]:=FloatToStr(Round((x_2-x_1+1)/200000*48.8/10)/100)+' TiB';
+                                        Table.Cells[5,row-1]:=IntToStr(x_2);
                                         s_len:=s_len+x_2-x_1+1;
                                    end;
+                               Table.Cells[6,row-1]:=IntToStr(s_len);
+                               Table.Cells[7,row-1]:=FloatToStr(Round(s_len*n_p_t)/100)+' TiB';
                            end;
                      end;
              end;
          end;
      p_len:=p_len+(y_2-y_1+1);
-     Phys.Text:=FloatToStr(Round(p_len/200000*48.8/10)/100);
-     Share.Text:=FloatToStr(Round((p_len-s_len)/200000*48.8/10)/100);
+     Phys.Text:=FloatToStr(Round(p_len*n_p_t)/100);
+     Share.Text:=FloatToStr(Round((p_len-s_len)*n_p_t)/100);
      if s_len=0 then
         begin
         Share.Font.Color:=clGreen;
@@ -279,40 +280,40 @@ begin
 
 end;
 
-procedure TSignaForm.BitBtn3Click(Sender: TObject);
+procedure TSignaForm.SaveClick(Sender: TObject);
 begin
-  SaveDialog1.InitialDir:=GetCurrentDir;
-  if SaveDialog1.Execute then
-     Memo1.Lines.SaveToFile(SaveDialog1.Filename);
+  SaveD.InitialDir:=GetCurrentDir;
+  if SaveD.Execute then
+     PlotList.Lines.SaveToFile(SaveD.Filename);
 end;
 
-procedure TSignaForm.BitBtn4Click(Sender: TObject);
+procedure TSignaForm.LoadClick(Sender: TObject);
 var
     i:integer;
 begin
-  OpenDialog1.InitialDir:=GetCurrentDir;
-  if OpenDialog1.Execute then
-     if fileExists(OpenDialog1.Filename) then
+  OpenD.InitialDir:=GetCurrentDir;
+  if OpenD.Execute then
+     if fileExists(OpenD.Filename) then
         begin
-             Memo3.Lines.LoadFromFile(OpenDialog1.Filename);
-             for i := 0 to Memo3.Lines.Count - 1 do
+             TmpFile.Lines.LoadFromFile(OpenD.Filename);
+             for i := 0 to TmpFile.Lines.Count - 1 do
                  begin
-                   Memo1.Lines.Add(Memo3.Lines.Strings[i]);
-                   Memo4.Lines.Add('From file');
+                   PlotList.Lines.Add(TmpFile.Lines.Strings[i]);
+                   PlotToDir.Lines.Add('From file');
                  end;
         end;
 end;
 
-procedure TSignaForm.BitBtn5Click(Sender: TObject);
+procedure TSignaForm.CleanClick(Sender: TObject);
 var
   buttonSelected : Integer;
 begin
    buttonSelected:= MessageDlg('Clear plot list?',mtConfirmation,mbYesNo, 0);
    if buttonSelected = mrYes then
       begin
-           Memo1.Lines.Clear;
-           Memo2.Lines.Clear;
-           Memo4.Lines.Clear;
+           PlotList.Lines.Clear;
+           ListDir.Lines.Clear;
+           PlotToDir.Lines.Clear;
       end;
 end;
 
@@ -329,15 +330,14 @@ begin
      CheckScav();
 end;
 
-procedure TSignaForm.StringGrid1PrepareCanvas(sender: TObject; aCol,
+procedure TSignaForm.TablePrepareCanvas(sender: TObject; aCol,
   aRow: Integer; aState: TGridDrawState);
 var
   MyTextStyle: TTextStyle;
 begin
-   // тут можно добавить проверку на конкретный столбец или строку через ACol, ARow
-   MyTextStyle := StringGrid1.Canvas.TextStyle;
+   MyTextStyle := Table.Canvas.TextStyle;
    If (ARow = 0) OR (ACol>3) then MyTextStyle.Alignment := taCenter;
-   StringGrid1.Canvas.TextStyle := MyTextStyle;
+   Table.Canvas.TextStyle := MyTextStyle;
 end;
 
 end.
