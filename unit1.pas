@@ -174,8 +174,10 @@ var i: Integer;
     j: Integer;
     pos1_1,pos1_2:integer;
     pos2_1,pos2_2:integer;
-    x_1,x_2:int64;
-    y_1,y_2:int64;
+    s_1,s_2:string;
+    x_1,x_2,x_len:int64;
+    z_1,z_2:int64;  //буфер
+    y_1,y_2,y_len:int64;
     row:integer;
     p_len,s_len:int64;
     n_p_t: real;
@@ -189,25 +191,47 @@ begin
      x_2:=0;
      y_1:=0;
      y_2:=0;
+
      Table.RowCount:=row;
      if PlotList.Lines.Count=-1 then Exit;
      for i := 0 to PlotList.Lines.Count - 2 do
          begin
+             z_1:=0;
              pos1_1:=Pos('_',PlotList.Lines.Strings[i]);
              pos1_2:=PosEx('_',PlotList.Lines.Strings[i],pos1_1+1);
-             x_1:=StrToInt64(Copy(PlotList.Lines.Strings[i],pos1_1+1,pos1_2-pos1_1-1));
-             x_2:=x_1+StrToInt64(Copy(PlotList.Lines.Strings[i],pos1_2+1,100))-1;
-             p_len:=p_len+(x_2-x_1+1);
+             s_1:=Copy(PlotList.Lines.Strings[i],pos1_1+1,pos1_2-pos1_1-1);
+
+             if Length(s_1)>18 then
+                begin
+                     x_1:=StrToInt64(Copy(s_1,Length(s_1)-17,18));
+                     z_1:=StrToInt64(Copy(s_1,0,Length(s_1)-18));
+                end
+             else x_1:=StrToInt64(s_1);
+
+             x_len:=StrToInt64(Copy(PlotList.Lines.Strings[i],pos1_2+1,100));
+             x_2:=x_1+x_len-1;
+             p_len:=p_len+x_len;
+
              for j := i+1 to PlotList.Lines.Count - 1 do
              begin
+                 z_2:=0;
                  pos2_1:=Pos('_',PlotList.Lines.Strings[j]);
                  pos2_2:=PosEx('_',PlotList.Lines.Strings[j],pos2_1+1);
-                 y_1:=StrToInt64(Copy(PlotList.Lines.Strings[j],pos2_1+1,pos2_2-pos1_1-1));
-                 y_2:=y_1+StrToInt64(Copy(PlotList.Lines.Strings[j],pos2_2+1,100))-1;
+                 s_2:=Copy(PlotList.Lines.Strings[j],pos2_1+1,pos2_2-pos1_1-1);
+
+                 if Length(s_2)>18 then
+                    begin
+                         y_1:=StrToInt64(Copy(s_2,Length(s_2)-17,18));
+                         z_2:=StrToInt64(Copy(s_2,0,Length(s_2)-18));
+                    end
+                 else y_1:=StrToInt64(s_2);
+
+                 y_len:=StrToInt64(Copy(PlotList.Lines.Strings[j],pos2_2+1,100));
+                 y_2:=y_1+y_len-1;
 
                  if x_1<=y_1 then
                     begin
-                        if x_2>=y_1 then
+                        if (x_2>=y_1) AND (z_1=z_2) then
                            begin
                                 row:=row+1;
                                 Table.RowCount:=row;
@@ -234,7 +258,7 @@ begin
                     end
                  else
                      begin
-                        if y_2>=x_1 then
+                        if (y_2>=x_1) AND (z_1=z_2) then
                            begin
                                 row:=row+1;
                                 Table.RowCount:=row;
@@ -273,7 +297,6 @@ begin
        Share.Font.Color:=clRed;
        Share.EditLabel.Font.Color:=clRed;
        end;
-
 
      if row=1 then ShowMessage('No plots crossing detected')
      else  ShowMessage('Plots crossing detected');
