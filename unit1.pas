@@ -314,6 +314,12 @@ begin
            PlotList.Lines.Clear;
            ListDir.Lines.Clear;
            PlotToDir.Lines.Clear;
+
+           Table.RowCount:=1;
+           Phys.Text:='';
+           Share.Text:='';
+           Share.Font.Color:=clGreen;
+           Share.EditLabel.Font.Color:=clDefault;
       end;
 end;
 
